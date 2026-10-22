@@ -13,6 +13,17 @@
 
 ---
 
+## Install in CasaOS
+
+1. Open your **CasaOS** dashboard.
+2. Click **App Store**, then click **Custom Install** in the top right.
+3. Click the **Import** button in the top right of the modal window.
+4. Paste the following URL or raw compose text:
+   ```text
+   [https://raw.githubusercontent.com/mrzoops/gatarr/main/casaos/docker-compose.yml](https://raw.githubusercontent.com/mrzoops/gatarr/main/casaos/docker-compose.yml)
+
+---
+
 ## Deployment (Docker Compose)
 
 ```yaml
