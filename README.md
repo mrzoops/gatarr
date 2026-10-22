@@ -18,7 +18,7 @@
 ```yaml
 services:
   gatarr:
-    image: ghcr.io/<your-github-username>/gatarr:latest
+    image: image: ghcr.io/mrzoops/gatarr:latest
     container_name: gatarr
     restart: unless-stopped
     ports:
