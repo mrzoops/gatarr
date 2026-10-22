@@ -1,0 +1,9 @@
+config/
+*.db
+*.db-journal
+*.bak
+__pycache__/
+*.pyc
+.env
+.DS_Store
+*.log

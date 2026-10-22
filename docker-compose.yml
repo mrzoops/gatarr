@@ -1,0 +1,46 @@
+name: gatarr
+services:
+    gatarr:
+        build:
+            context: /home/mrzoops/gatarr
+            dockerfile: Dockerfile
+        cpu_shares: 90
+        command: []
+        container_name: gatarr
+        deploy:
+            resources:
+                limits:
+                    memory: "8177844224"
+        environment:
+            TZ: America/New_York
+        hostname: gatarr
+        image: gatarr:local
+        network_mode: bridge
+        ports:
+            - mode: ingress
+              target: 5055
+              published: "5055"
+              protocol: tcp
+        restart: unless-stopped
+        volumes:
+            - type: bind
+              source: /home/mrzoops/gatarr/config
+              target: /app/config
+              bind:
+                create_host_path: true
+networks:
+    default:
+        name: gatarr_default
+    gatarr:
+        name: gatarr
+x-casaos:
+    author: self
+    category: self
+    hostname: ""
+    icon: ""
+    index: /
+    is_uncontrolled: false
+    port_map: "5055"
+    scheme: http
+    title:
+        custom: Gatarr

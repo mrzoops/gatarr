@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gatarr</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23c026d3'/><text x='50' y='70' font-family='sans-serif' font-size='60' font-weight='900' fill='white' text-anchor='middle'>G</text></svg>">
+    <style>
+        :root {
+            --bg-base: #0c0a13;
+            --bg-sidebar: #120e1d;
+            --bg-card: #191428;
+            --bg-input: #09070f;
+            --trakt-purple: #c026d3;
+            --trakt-purple-hover: #a21caf;
+            --trakt-accent: #a855f7;
+            --btn-reject: #e11d48;
+            --btn-reject-hover: #be123c;
+            --text-main: #f8fafc;
+            --text-muted: #9d94b0;
+            --border: #2a223f;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: var(--bg-base); color: var(--text-main); font-family: 'Inter', system-ui, sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border); padding: 24px; display: flex; flex-direction: column; justify-content: space-between; }
+        .logo-wrap { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+        .logo-icon { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, #c026d3, #7c3aed); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 900; color: #fff; box-shadow: 0 4px 12px rgba(192, 38, 211, 0.4); }
+        .logo-text { font-size: 1.4rem; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+        .nav-links { display: flex; flex-direction: column; gap: 6px; margin-bottom: 24px; }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: 0.15s; }
+        .nav-item:hover { color: #fff; background: rgba(192, 38, 211, 0.1); }
+        .nav-item.active { color: #fff; background: var(--trakt-purple); font-weight: 600; }
+        .btn-sync { background: var(--trakt-purple); color: #fff; font-weight: 600; border: none; border-radius: 8px; padding: 10px 14px; cursor: pointer; width: 100%; transition: 0.2s; }
+        .btn-sync:hover { background: var(--trakt-purple-hover); }
+        .content { flex: 1; overflow-y: auto; padding: 36px 48px; }
+        .tab-section { display: none; }
+        .tab-section.active { display: block; }
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 24px; }
+        h2 { margin: 0 0 16px 0; font-size: 1.15rem; font-weight: 600; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+        label { display: block; font-size: 0.82rem; font-weight: 500; color: var(--text-muted); margin-bottom: 6px; }
+        input, select { width: 100%; background: var(--bg-input); border: 1px solid var(--border); color: #fff; padding: 9px 12px; border-radius: 6px; font-size: 0.9rem; }
+        input:focus, select:focus { outline: none; border-color: var(--trakt-purple); }
+        .sub-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .chip { background: var(--bg-input); border: 1px solid var(--border); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; }
+        .chip.active { background: rgba(192, 38, 211, 0.2); border-color: var(--trakt-purple); color: var(--trakt-accent); font-weight: 600; }
+        .toggle-wrap { display: flex; align-items: center; gap: 12px; margin-top: 16px; padding: 12px 16px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; }
+        .switch { position: relative; width: 44px; height: 24px; display: inline-block; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background: #2a223f; border-radius: 24px; transition: 0.2s; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.2s; }
+        input:checked + .slider { background: var(--trakt-purple); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .btn-load { background: #2a223f; color: #fff; border: none; border-radius: 6px; padding: 9px 14px; cursor: pointer; font-size: 0.85rem; font-weight: 500; }
+        .btn-load:hover { background: #3c3258; }
+        .btn-action-approve { background: var(--trakt-purple); color: #fff; font-weight: 600; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+        .btn-action-approve:hover { background: var(--trakt-purple-hover); }
+        .btn-action-reject { background: #2a1b24; color: #f43f5e; border: 1px solid #4c1d2e; font-weight: 600; border-radius: 6px; padding: 6px 12px; cursor: pointer; margin-left: 6px; }
+        .btn-action-reject:hover { background: var(--btn-reject); color: #fff; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        th, td { text-align: left; padding: 12px; font-size: 0.85rem; border-bottom: 1px solid var(--border); }
+        th { color: var(--text-muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+        .badge-pending { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .badge-done { background: rgba(168, 85, 247, 0.15); color: var(--trakt-accent); }
+        .badge-rejected { background: rgba(244, 63, 94, 0.15); color: #f43f5e; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div>
+            <div class="logo-wrap">
+                <div class="logo-icon">G</div>
+                <div class="logo-text">Gatarr</div>
+            </div>
+            <div class="nav-links">
+                <div class="nav-item active" onclick="switchTab('approvals')">Approvals Queue</div>
+                <div class="nav-item" onclick="switchTab('config')">Configuration</div>
+            </div>
+            <button class="btn-sync" onclick="triggerSync()">Sync Watchlist Now</button>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">
+            CasaOS · Port 5055<br>Trakt Theme
+        </div>
+    </div>
+
+    <div class="content">
+        <!-- Approvals Section -->
+        <div id="tab-approvals" class="tab-section active">
+            <div class="card">
+                <h2>Pending Approvals</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Provider Status</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in pending %}
+                        <tr id="row-{{ item.trakt_id }}">
+                            <td><strong>{{ item.title }}</strong> ({{ item.year }})</td>
+                            <td>{{ item.media_type | upper }}</td>
+                            <td style="color: var(--text-muted);">{{ item.reason }}</td>
+                            <td id="status-{{ item.trakt_id }}"><span class="badge badge-pending">{{ item.status }}</span></td>
+                            <td style="text-align: right;" id="action-{{ item.trakt_id }}">
+                                <button class="btn-action-approve"
+                                    data-trakt-id="{{ item.trakt_id }}"
+                                    data-tmdb-id="{{ item.tmdb_id }}"
+                                    data-type="{{ item.media_type }}"
+                                    data-title="{{ item.title }}"
+                                    data-year="{{ item.year }}"
+                                    onclick="handleApproveClick(this)">Approve</button>
+                                <button class="btn-action-reject"
+                                    data-trakt-id="{{ item.trakt_id }}"
+                                    onclick="handleRejectClick(this)">Reject</button>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">No items pending approval.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h2>History & Existing Items</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Provider Status</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in approved %}
+                        <tr>
+                            <td><strong>{{ item.title }}</strong> ({{ item.year }})</td>
+                            <td>{{ item.media_type | upper }}</td>
+                            <td style="color: var(--text-muted);">{{ item.reason }}</td>
+                            <td>
+                                {% if 'Reject' in item.status %}
+                                    <span class="badge badge-rejected">{{ item.status }}</span>
+                                {% else %}
+                                    <span class="badge badge-done">{{ item.status }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 24px;">No processed items in history.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Configuration Section -->
+        <div id="tab-config" class="tab-section">
+            <div class="card">
+                <h2>Provider & Sync Schedule</h2>
+                <div class="grid">
+                    <div>
+                        <label>Trakt Username</label>
+                        <input type="text" id="trakt_user" value="{{ config.trakt_user }}">
+                    </div>
+                    <div>
+                        <label>Trakt Client ID</label>
+                        <input type="text" id="trakt_client_id" value="{{ config.trakt_client_id }}">
+                    </div>
+                    <div>
+                        <label>TMDB API Key (v3 auth)</label>
+                        <input type="text" id="tmdb_api_key" value="{{ config.tmdb_api_key }}">
+                    </div>
+                    <div>
+                        <label>Filtering Mode</label>
+                        <select id="mode">
+                            <option value="A" {% if config.mode == 'A' %}selected{% endif %}>Mode A: Download if NO Free/Sub stream exists anywhere</option>
+                            <option value="B" {% if config.mode == 'B' %}selected{% endif %}>Mode B: Download if missing from MY subscriptions</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Automatic Sync Frequency</label>
+                        <select id="sync_interval_hours">
+                            <option value="0.25" {% if config.sync_interval_hours == 0.25 %}selected{% endif %}>Every 15 Minutes</option>
+                            <option value="0.5" {% if config.sync_interval_hours == 0.5 %}selected{% endif %}>Every 30 Minutes</option>
+                            <option value="1" {% if config.sync_interval_hours == 1 %}selected{% endif %}>Every 1 Hour</option>
+                            <option value="2" {% if config.sync_interval_hours == 2 %}selected{% endif %}>Every 2 Hours</option>
+                            <option value="4" {% if config.sync_interval_hours == 4 or not config.sync_interval_hours %}selected{% endif %}>Every 4 Hours</option>
+                            <option value="6" {% if config.sync_interval_hours == 6 %}selected{% endif %}>Every 6 Hours</option>
+                            <option value="12" {% if config.sync_interval_hours == 12 %}selected{% endif %}>Every 12 Hours</option>
+                            <option value="24" {% if config.sync_interval_hours == 24 %}selected{% endif %}>Every 24 Hours</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="toggle-wrap">
+                    <label class="switch">
+                        <input type="checkbox" id="auto_approve" {% if config.auto_approve %}checked{% endif %}>
+                        <span class="slider"></span>
+                    </label>
+                    <div>
+                        <strong style="font-size: 0.9rem;">Auto-Approve Downloads</strong>
+                        <div style="font-size: 0.78rem; color: var(--text-muted);">Automatically sends qualifying items to Radarr/Sonarr without requiring manual confirmation.</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 16px;">
+                    <label>Active Subscriptions (Mode B)</label>
+                    <div class="sub-grid" id="sub_chips">
+                        {% set services = ["Netflix", "Amazon Prime Video", "Max", "Disney Plus", "Apple TV Plus", "Hulu", "Paramount Plus", "Peacock", "Free / Ad-Supported (Tubi, Pluto, Freevee)"] %}
+                        {% for svc in services %}
+                            <div class="chip {% if svc in config.subscribed %}active{% endif %}" onclick="toggleChip(this)">{{ svc }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Radarr Section -->
+            <div class="card">
+                <h2>Radarr Integration (Movies)</h2>
+                <div class="grid">
+                    <div>
+                        <label>Radarr URL</label>
+                        <input type="text" id="radarr_url" value="{{ config.radarr.url }}">
+                    </div>
+                    <div>
+                        <label>Radarr API Key</label>
+                        <input type="text" id="radarr_api_key" value="{{ config.radarr.api_key }}">
+                    </div>
+                    <div>
+                        <label>&nbsp;</label>
+                        <button class="btn-load" type="button" onclick="loadProfiles('radarr')">Connect & Pull Radarr Profiles</button>
+                    </div>
+                    <div>
+                        <label>Target Quality Profile</label>
+                        <select id="radarr_profile">
+                            {% if config.radarr.profile %}
+                                <option value="{{ config.radarr.profile }}" selected>Profile ID: {{ config.radarr.profile }}</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                    <div>
+                        <label>Root Folder</label>
+                        <select id="radarr_root">
+                            {% if config.radarr.root %}
+                                <option value="{{ config.radarr.root }}" selected>{{ config.radarr.root }}</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sonarr Section -->
+            <div class="card">
+                <h2>Sonarr Integration (TV Series)</h2>
+                <div class="grid">
+                    <div>
+                        <label>Sonarr URL</label>
+                        <input type="text" id="sonarr_url" value="{{ config.sonarr.url }}">
+                    </div>
+                    <div>
+                        <label>Sonarr API Key</label>
+                        <input type="text" id="sonarr_api_key" value="{{ config.sonarr.api_key }}">
+                    </div>
+                    <div>
+                        <label>&nbsp;</label>
+                        <button class="btn-load" type="button" onclick="loadProfiles('sonarr')">Connect & Pull Sonarr Profiles</button>
+                    </div>
+                    <div>
+                        <label>Target Quality Profile</label>
+                        <select id="sonarr_profile">
+                            {% if config.sonarr.profile %}
+                                <option value="{{ config.sonarr.profile }}" selected>Profile ID: {{ config.sonarr.profile }}</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                    <div>
+                        <label>Root Folder</label>
+                        <select id="sonarr_root">
+                            {% if config.sonarr.root %}
+                                <option value="{{ config.sonarr.root }}" selected>{{ config.sonarr.root }}</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pushover Section -->
+            <div class="card">
+                <h2>Pushover Notifications</h2>
+                <div class="grid">
+                    <div>
+                        <label>Pushover Application Token</label>
+                        <input type="text" id="pushover_token" value="{{ config.pushover.token }}">
+                    </div>
+                    <div>
+                        <label>Pushover User Key</label>
+                        <input type="text" id="pushover_user" value="{{ config.pushover.user_key }}">
+                    </div>
+                    <div>
+                        <label>Callback URL (Accessible from Phone)</label>
+                        <input type="text" id="pushover_cb" value="{{ config.pushover.public_base_url }}">
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button class="btn-sync" style="width: auto; padding: 10px 24px;" onclick="saveConfig()">Save All Configuration</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            if (tab === 'approvals') document.querySelectorAll('.nav-item')[0].classList.add('active');
+            else document.querySelectorAll('.nav-item')[1].classList.add('active');
+        }
+
+        function toggleChip(el) {
+            el.classList.toggle('active');
+        }
+
+        async function loadProfiles(service) {
+            const url = document.getElementById(service + '_url').value;
+            const key = document.getElementById(service + '_api_key').value;
+            if(!url || !key) return alert("Enter URL and API Key first.");
+
+            try {
+                const res = await fetch(`/api/arr/fetch-options?service=${service}&url=${encodeURIComponent(url)}&api_key=${encodeURIComponent(key)}`);
+                const data = await res.json();
+                if(data.success) {
+                    const profSel = document.getElementById(service + '_profile');
+                    const rootSel = document.getElementById(service + '_root');
+                    profSel.innerHTML = '';
+                    rootSel.innerHTML = '';
+                    data.profiles.forEach(p => {
+                        const opt = document.createElement('option');
+                        opt.value = p.id;
+                        opt.textContent = p.name;
+                        profSel.appendChild(opt);
+                    });
+                    data.roots.forEach(r => {
+                        const opt = document.createElement('option');
+                        opt.value = r.path;
+                        opt.textContent = `${r.path} (${(r.freeSpace / 1073741824).toFixed(1)} GB free)`;
+                        rootSel.appendChild(opt);
+                    });
+                    alert(`Connected to ${service.toUpperCase()}! Profiles and root folders loaded.`);
+                } else {
+                    alert('Connection failed: Check URL and API Key.');
+                }
+            } catch (e) {
+                alert('Connection error: ' + e);
+            }
+        }
+
+        async function saveConfig() {
+            const subscribed = Array.from(document.querySelectorAll('#sub_chips .chip.active')).map(c => c.textContent.trim());
+            const payload = {
+                trakt_user: document.getElementById('trakt_user').value,
+                trakt_client_id: document.getElementById('trakt_client_id').value,
+                tmdb_api_key: document.getElementById('tmdb_api_key').value,
+                mode: document.getElementById('mode').value,
+                sync_interval_hours: parseFloat(document.getElementById('sync_interval_hours').value),
+                auto_approve: document.getElementById('auto_approve').checked,
+                subscribed: subscribed,
+                radarr: {
+                    url: document.getElementById('radarr_url').value,
+                    api_key: document.getElementById('radarr_api_key').value,
+                    profile: document.getElementById('radarr_profile').value,
+                    root: document.getElementById('radarr_root').value
+                },
+                sonarr: {
+                    url: document.getElementById('sonarr_url').value,
+                    api_key: document.getElementById('sonarr_api_key').value,
+                    profile: document.getElementById('sonarr_profile').value,
+                    root: document.getElementById('sonarr_root').value
+                },
+                pushover: {
+                    token: document.getElementById('pushover_token').value,
+                    user_key: document.getElementById('pushover_user').value,
+                    public_base_url: document.getElementById('pushover_cb').value
+                }
+            };
+
+            const res = await fetch('/api/save-config', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            if(res.ok) alert('Settings saved successfully!');
+            else alert('Failed to save settings.');
+        }
+
+        function handleApproveClick(btn) {
+            const traktId = parseInt(btn.dataset.traktId);
+            const tmdbId = parseInt(btn.dataset.tmdbId);
+            const mediaType = btn.dataset.type;
+            const title = btn.dataset.title;
+            const year = parseInt(btn.dataset.year);
+            approveFromDashboard(traktId, tmdbId, mediaType, title, year);
+        }
+
+        function handleRejectClick(btn) {
+            const traktId = parseInt(btn.dataset.traktId);
+            rejectFromDashboard(traktId);
+        }
+
+        async function approveFromDashboard(traktId, tmdbId, mediaType, title, year) {
+            const actionContainer = document.getElementById(`action-${traktId}`);
+            actionContainer.innerHTML = '<span style="color: var(--trakt-accent); font-size: 0.85rem;">Adding...</span>';
+
+            try {
+                const res = await fetch(`/api/approve-item`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ trakt_id: traktId, tmdb_id: tmdbId, media_type: mediaType, title: title, year: year })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    document.getElementById(`status-${traktId}`).innerHTML = `<span class="badge badge-done">${data.status}</span>`;
+                    actionContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 0.8rem;">—</span>';
+                } else {
+                    alert('Error: ' + data.status);
+                    setTimeout(() => location.reload(), 1500);
+                }
+            } catch (e) {
+                alert('Request failed: ' + e);
+                setTimeout(() => location.reload(), 1500);
+            }
+        }
+
+        async function rejectFromDashboard(traktId) {
+            if (!confirm("Are you sure you want to reject this item? It won't prompt you again.")) return;
+
+            const actionContainer = document.getElementById(`action-${traktId}`);
+            actionContainer.innerHTML = '<span style="color: var(--btn-reject); font-size: 0.85rem;">Rejecting...</span>';
+
+            try {
+                const res = await fetch(`/api/reject-item`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ trakt_id: traktId })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    const row = document.getElementById(`row-${traktId}`);
+                    row.style.opacity = '0.3';
+                    document.getElementById(`status-${traktId}`).innerHTML = `<span class="badge badge-rejected">Rejected / Ignored</span>`;
+                    actionContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 0.8rem;">—</span>';
+                }
+            } catch (e) {
+                alert('Request failed: ' + e);
+                setTimeout(() => location.reload(), 1500);
+            }
+        }
+
+        async function triggerSync() {
+            await fetch('/api/sync', { method: 'POST' });
+            alert('Watchlist scan initiated. Refreshing...');
+            setTimeout(() => location.reload(), 2500);
+        }
+    </script>
+</body>
+</html>
