@@ -1,0 +1,42 @@
+name: gatarr
+services:
+  gatarr:
+    image: ghcr.io/mrzoops/gatarr:latest
+    container_name: gatarr
+    restart: unless-stopped
+    ports:
+      - "5055:5055"
+    volumes:
+      - type: bind
+        source: /DATA/AppData/gatarr/config
+        target: /app/config
+    environment:
+      - TZ=America/New_York
+    x-casaos:
+      envs:
+        - container: TZ
+          description:
+            en_us: System Timezone
+      volumes:
+        - container: /app/config
+          description:
+            en_us: Gatarr configuration and local SQLite database
+x-casaos:
+  architectures:
+    - amd64
+    - arm64
+  main: gatarr
+  author: mrzoops
+  category: Media
+  description:
+    en_us: Smart automation gatekeeper connecting your Trakt Watchlist to Radarr and Sonarr. Automatically checks TMDB and JustWatch streaming availability, preventing unnecessary downloads when media is already covered by your active subscriptions.
+  tagline:
+    en_us: Smart Trakt to Radarr/Sonarr gatekeeper based on your streaming subscriptions
+  developer: Taylor Zoppi
+  icon: https://raw.githubusercontent.com/mrzoops/gatarr/main/app/static/icon.png
+  thumbnail: https://raw.githubusercontent.com/mrzoops/gatarr/main/app/static/icon.png
+  title:
+    en_us: Gatarr
+  index: /
+  port_map: "5055"
+  scheme: http
