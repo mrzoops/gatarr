@@ -183,6 +183,31 @@ async def api_reject_item(req: Request):
 
     return {"success": True, "status": "Rejected / Ignored"}
 
+@app.post("/api/remove-item")
+async def api_remove_item(req: Request):
+    data = await req.json()
+    trakt_id = data.get("trakt_id")
+    tmdb_id = data.get("tmdb_id")
+    media_type = data.get("media_type")
+
+    cfg = load_config()
+    success = False
+
+    if media_type == "movie":
+        radarr = ArrClient(cfg["radarr"]["url"], cfg["radarr"]["api_key"])
+        success = radarr.delete_movie(tmdb_id)
+    elif media_type == "show":
+        sonarr = ArrClient(cfg["sonarr"]["url"], cfg["sonarr"]["api_key"])
+        success = sonarr.delete_series(tmdb_id)
+
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("UPDATE queue SET status = ? WHERE trakt_id = ?", ("Removed from Library", trakt_id))
+    conn.commit()
+    conn.close()
+
+    return {"success": success, "status": "Removed from Library"}
+
 @app.get("/approve")
 def approve_download(trakt_id: int, tmdb_id: int, media_type: str, title: str, year: int):
     cfg = load_config()
@@ -265,7 +290,6 @@ def run_sync_cycle():
         if c.fetchone():
             continue
 
-        # Check Radarr first
         if radarr.movie_exists(tmdb_id):
             c.execute("INSERT OR REPLACE INTO queue (trakt_id, tmdb_id, title, year, media_type, reason, status) VALUES (?, ?, ?, ?, 'movie', 'Existing library item', 'Already in Radarr')",
                       (trakt_id, tmdb_id, title, year))
@@ -312,7 +336,6 @@ def run_sync_cycle():
                       (trakt_id, tmdb_id, title, year, reason))
             conn.commit()
         else:
-            # Note streamable/destined item and move on
             c.execute("INSERT OR REPLACE INTO queue (trakt_id, tmdb_id, title, year, media_type, reason, status) VALUES (?, ?, ?, ?, 'movie', ?, 'Available on Streaming')",
                       (trakt_id, tmdb_id, title, year, reason))
             conn.commit()
@@ -334,7 +357,6 @@ def run_sync_cycle():
         if c.fetchone():
             continue
 
-        # Check Sonarr first
         if sonarr.series_exists(tvdb_id):
             c.execute("INSERT OR REPLACE INTO queue (trakt_id, tmdb_id, title, year, media_type, reason, status) VALUES (?, ?, ?, ?, 'show', 'Existing library item', 'Already in Sonarr')",
                       (trakt_id, tvdb_id, title, year))
@@ -381,7 +403,6 @@ def run_sync_cycle():
                       (trakt_id, tvdb_id, title, year, reason))
             conn.commit()
         else:
-            # Streamable or destined for subscription (e.g., Apple TV+, Netflix)
             c.execute("INSERT OR REPLACE INTO queue (trakt_id, tmdb_id, title, year, media_type, reason, status) VALUES (?, ?, ?, ?, 'show', ?, 'Available on Streaming')",
                       (trakt_id, tvdb_id, title, year, reason))
             conn.commit()

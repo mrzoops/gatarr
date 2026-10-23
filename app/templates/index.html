@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gatarr</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23c026d3'/><text x='50' y='70' font-family='sans-serif' font-size='60' font-weight='900' fill='white' text-anchor='middle'>G</text></svg>">
@@ -23,67 +23,119 @@
             --success: #10b981;
             --warning: #f59e0b;
         }
+
+        body.light-theme {
+            --bg-base: #f8f6fb;
+            --bg-sidebar: #ffffff;
+            --bg-card: #ffffff;
+            --bg-input: #f1edf7;
+            --trakt-purple: #9333ea;
+            --trakt-purple-hover: #7e22ce;
+            --trakt-accent: #7c3aed;
+            --btn-reject: #e11d48;
+            --btn-reject-hover: #be123c;
+            --text-main: #1e1b2e;
+            --text-muted: #6b6380;
+            --border: #e2daf0;
+            --success: #059669;
+            --warning: #d97706;
+        }
+
         * { box-sizing: border-box; }
-        body { margin: 0; background: var(--bg-base); color: var(--text-main); font-family: 'Inter', system-ui, sans-serif; display: flex; height: 100vh; overflow: hidden; }
-        .sidebar { width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border); padding: 24px; display: flex; flex-direction: column; justify-content: space-between; }
-        .logo-wrap { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+        body { margin: 0; background: var(--bg-base); color: var(--text-main); font-family: 'Inter', system-ui, sans-serif; display: flex; height: 100vh; overflow: hidden; transition: background 0.2s, color 0.2s; }
+        
+        .sidebar { width: 260px; min-width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border); padding: 24px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s; }
+        .logo-wrap { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+        .logo-brand { display: flex; align-items: center; gap: 12px; }
         .logo-icon { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, #c026d3, #7c3aed); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 900; color: #fff; box-shadow: 0 4px 12px rgba(192, 38, 211, 0.4); }
-        .logo-text { font-size: 1.4rem; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
-        .nav-links { display: flex; flex-direction: column; gap: 6px; margin-bottom: 24px; }
+        .logo-text { font-size: 1.4rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px; }
+        .theme-toggle { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size: 1rem; }
+        
+        .nav-links { display: flex; flex-direction: column; gap: 6px; }
         .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: 0.15s; }
-        .nav-item:hover { color: #fff; background: rgba(192, 38, 211, 0.1); }
+        .nav-item:hover { color: var(--text-main); background: rgba(192, 38, 211, 0.1); }
         .nav-item.active { color: #fff; background: var(--trakt-purple); font-weight: 600; }
-        .btn-sync { background: var(--trakt-purple); color: #fff; font-weight: 600; border: none; border-radius: 8px; padding: 10px 14px; cursor: pointer; width: 100%; transition: 0.2s; }
+        
+        .sidebar-bottom { display: flex; flex-direction: column; gap: 16px; border-top: 1px solid var(--border); padding-top: 16px; }
+        .btn-sync { background: var(--trakt-purple); color: #fff; font-weight: 600; border: none; border-radius: 8px; padding: 12px 14px; cursor: pointer; width: 100%; transition: 0.2s; box-shadow: 0 4px 12px rgba(192, 38, 211, 0.25); text-align: center; }
         .btn-sync:hover { background: var(--trakt-purple-hover); }
+
         .content { flex: 1; overflow-y: auto; padding: 36px 48px; }
         .tab-section { display: none; }
         .tab-section.active { display: block; }
-        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 24px; }
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         h2 { margin: 0 0 16px 0; font-size: 1.15rem; font-weight: 600; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
         label { display: block; font-size: 0.82rem; font-weight: 500; color: var(--text-muted); margin-bottom: 6px; }
-        input, select { width: 100%; background: var(--bg-input); border: 1px solid var(--border); color: #fff; padding: 9px 12px; border-radius: 6px; font-size: 0.9rem; }
+        input, select { width: 100%; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 9px 12px; border-radius: 6px; font-size: 0.9rem; }
         input:focus, select:focus { outline: none; border-color: var(--trakt-purple); }
         .sub-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
         .chip { background: var(--bg-input); border: 1px solid var(--border); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; }
-        .chip.active { background: rgba(192, 38, 211, 0.2); border-color: var(--trakt-purple); color: var(--trakt-accent); font-weight: 600; }
+        .chip.active { background: rgba(192, 38, 211, 0.15); border-color: var(--trakt-purple); color: var(--trakt-purple); font-weight: 600; }
+        
         .toggle-wrap { display: flex; align-items: center; gap: 12px; margin-top: 16px; padding: 12px 16px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; }
         .switch { position: relative; width: 44px; height: 24px; display: inline-block; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; inset: 0; background: #2a223f; border-radius: 24px; transition: 0.2s; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background: var(--border); border-radius: 24px; transition: 0.2s; }
         .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.2s; }
         input:checked + .slider { background: var(--trakt-purple); }
         input:checked + .slider:before { transform: translateX(20px); }
-        .btn-load { background: #2a223f; color: #fff; border: none; border-radius: 6px; padding: 9px 14px; cursor: pointer; font-size: 0.85rem; font-weight: 500; }
-        .btn-load:hover { background: #3c3258; }
+
+        .btn-load { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; padding: 9px 14px; cursor: pointer; font-size: 0.85rem; font-weight: 500; }
+        .btn-load:hover { border-color: var(--trakt-purple); }
         .btn-action-approve { background: var(--trakt-purple); color: #fff; font-weight: 600; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
         .btn-action-approve:hover { background: var(--trakt-purple-hover); }
-        .btn-action-reject { background: #2a1b24; color: #f43f5e; border: 1px solid #4c1d2e; font-weight: 600; border-radius: 6px; padding: 6px 12px; cursor: pointer; margin-left: 6px; }
+        .btn-action-reject { background: rgba(225, 29, 72, 0.15); color: #f43f5e; border: 1px solid rgba(225, 29, 72, 0.3); font-weight: 600; border-radius: 6px; padding: 6px 12px; cursor: pointer; margin-left: 6px; }
         .btn-action-reject:hover { background: var(--btn-reject); color: #fff; }
+        .btn-action-force { background: rgba(168, 85, 247, 0.15); color: var(--trakt-purple); border: 1px solid var(--trakt-purple); font-weight: 600; border-radius: 6px; padding: 5px 10px; cursor: pointer; font-size: 0.8rem; }
+        .btn-action-force:hover { background: var(--trakt-purple); color: #fff; }
+        .btn-action-remove { background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; border-radius: 6px; padding: 5px 10px; cursor: pointer; font-size: 0.8rem; margin-left: 6px; }
+        .btn-action-remove:hover { background: #ef4444; color: #fff; }
+
+        .table-wrap { overflow-x: auto; width: 100%; -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: collapse; margin-top: 12px; }
         th, td { text-align: left; padding: 12px; font-size: 0.85rem; border-bottom: 1px solid var(--border); }
         th { color: var(--text-muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; }
-        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
-        .badge-pending { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
-        .badge-done { background: rgba(168, 85, 247, 0.15); color: var(--trakt-accent); }
-        .badge-rejected { background: rgba(244, 63, 94, 0.15); color: #f43f5e; }
+
+        /* Unified Color-Coded Badges */
+        .badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; font-size: 0.76rem; font-weight: 600; white-space: nowrap; }
+        .badge-pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-added { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.35); }
+        .badge-stream { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); }
+        .badge-rejected { background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.35); }
+
+        /* Responsive Mobile Layout */
+        @media (max-width: 768px) {
+            body { flex-direction: column; height: 100vh; overflow-y: auto; }
+            .sidebar { width: 100%; min-width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 16px; box-sizing: border-box; }
+            .nav-links { flex-direction: row; justify-content: flex-start; gap: 8px; }
+            .nav-item { padding: 8px 12px; font-size: 0.82rem; }
+            .sidebar-bottom { border-top: none; padding-top: 12px; flex-direction: row; align-items: center; justify-content: space-between; }
+            .btn-sync { padding: 8px 12px; font-size: 0.85rem; width: auto; }
+            .content { padding: 16px; }
+            .card { padding: 16px; margin-bottom: 16px; }
+            th, td { padding: 8px 6px; font-size: 0.8rem; }
+        }
     </style>
 </head>
 <body>
     <div class="sidebar">
         <div>
             <div class="logo-wrap">
-                <div class="logo-icon">G</div>
-                <div class="logo-text">Gatarr</div>
+                <div class="logo-brand">
+                    <div class="logo-icon">G</div>
+                    <div class="logo-text">Gatarr</div>
+                </div>
+                <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle Light/Dark Theme">🌙</button>
             </div>
             <div class="nav-links">
                 <div class="nav-item active" onclick="switchTab('approvals')">Approvals Queue</div>
                 <div class="nav-item" onclick="switchTab('config')">Configuration</div>
             </div>
-            <button class="btn-sync" onclick="triggerSync()">Sync Watchlist Now</button>
         </div>
-        <div style="font-size: 0.75rem; color: var(--text-muted);">
-            CasaOS · Port 5055<br>Trakt Theme
+        <div class="sidebar-bottom">
+            <button class="btn-sync" onclick="triggerSync()">Sync Watchlist Now</button>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">CasaOS · Port 5055</div>
         </div>
     </div>
 
@@ -92,77 +144,103 @@
         <div id="tab-approvals" class="tab-section active">
             <div class="card">
                 <h2>Pending Approvals</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Type</th>
-                            <th>Provider Status</th>
-                            <th>Status</th>
-                            <th style="text-align: right;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in pending %}
-                        <tr id="row-{{ item.trakt_id }}">
-                            <td><strong>{{ item.title }}</strong> ({{ item.year }})</td>
-                            <td>{{ item.media_type | upper }}</td>
-                            <td style="color: var(--text-muted);">{{ item.reason }}</td>
-                            <td id="status-{{ item.trakt_id }}"><span class="badge badge-pending">{{ item.status }}</span></td>
-                            <td style="text-align: right;" id="action-{{ item.trakt_id }}">
-                                <button class="btn-action-approve"
-                                    data-trakt-id="{{ item.trakt_id }}"
-                                    data-tmdb-id="{{ item.tmdb_id }}"
-                                    data-type="{{ item.media_type }}"
-                                    data-title="{{ item.title }}"
-                                    data-year="{{ item.year }}"
-                                    onclick="handleApproveClick(this)">Approve</button>
-                                <button class="btn-action-reject"
-                                    data-trakt-id="{{ item.trakt_id }}"
-                                    onclick="handleRejectClick(this)">Reject</button>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">No items pending approval.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Provider Status</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in pending %}
+                            <tr id="row-{{ item.trakt_id }}">
+                                <td><strong>{{ item.title }}</strong> ({{ item.year }})</td>
+                                <td>{{ item.media_type | upper }}</td>
+                                <td style="color: var(--text-muted);">{{ item.reason }}</td>
+                                <td id="status-{{ item.trakt_id }}"><span class="badge badge-pending">⏳ {{ item.status }}</span></td>
+                                <td style="text-align: right;" id="action-{{ item.trakt_id }}">
+                                    <button class="btn-action-approve"
+                                        data-trakt-id="{{ item.trakt_id }}"
+                                        data-tmdb-id="{{ item.tmdb_id }}"
+                                        data-type="{{ item.media_type }}"
+                                        data-title="{{ item.title }}"
+                                        data-year="{{ item.year }}"
+                                        onclick="handleApproveClick(this)">Approve</button>
+                                    <button class="btn-action-reject"
+                                        data-trakt-id="{{ item.trakt_id }}"
+                                        onclick="handleRejectClick(this)">Reject</button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">No items pending approval.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <div class="card">
                 <h2>History & Existing Items</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Type</th>
-                            <th>Provider Status</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in approved %}
-                        <tr>
-                            <td><strong>{{ item.title }}</strong> ({{ item.year }})</td>
-                            <td>{{ item.media_type | upper }}</td>
-                            <td style="color: var(--text-muted);">{{ item.reason }}</td>
-                            <td>
-                                {% if 'Reject' in item.status %}
-                                    <span class="badge badge-rejected">{{ item.status }}</span>
-                                {% else %}
-                                    <span class="badge badge-done">{{ item.status }}</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 24px;">No processed items in history.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Provider Status</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in approved %}
+                            <tr id="hist-row-{{ item.trakt_id }}">
+                                <td><strong>{{ item.title }}</strong> ({{ item.year }})</td>
+                                <td>{{ item.media_type | upper }}</td>
+                                <td style="color: var(--text-muted);">{{ item.reason }}</td>
+                                <td id="hist-status-{{ item.trakt_id }}">
+                                    {% if 'Added' in item.status or 'Already' in item.status %}
+                                        <span class="badge badge-added">✓ {{ item.status }}</span>
+                                    {% elif 'Streaming' in item.status %}
+                                        <span class="badge badge-stream">📡 Bypassed (Streaming)</span>
+                                    {% elif 'Reject' in item.status or 'Removed' in item.status %}
+                                        <span class="badge badge-rejected">✕ {{ item.status }}</span>
+                                    {% else %}
+                                        <span class="badge badge-pending">⏳ {{ item.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td style="text-align: right;" id="hist-action-{{ item.trakt_id }}">
+                                    {% if 'Added' in item.status or 'Already' in item.status %}
+                                        <button class="btn-action-remove"
+                                            data-trakt-id="{{ item.trakt_id }}"
+                                            data-tmdb-id="{{ item.tmdb_id }}"
+                                            data-type="{{ item.media_type }}"
+                                            onclick="handleRemoveClick(this)">Remove</button>
+                                    {% else %}
+                                        <button class="btn-action-force"
+                                            data-trakt-id="{{ item.trakt_id }}"
+                                            data-tmdb-id="{{ item.tmdb_id }}"
+                                            data-type="{{ item.media_type }}"
+                                            data-title="{{ item.title }}"
+                                            data-year="{{ item.year }}"
+                                            onclick="handleApproveClick(this)">Force Add</button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">No processed items in history.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -310,7 +388,7 @@
                         <input type="text" id="pushover_user" value="{{ config.pushover.user_key }}">
                     </div>
                     <div>
-                        <label>Callback URL (Accessible from Phone)</label>
+                        <label>Callback URL (Tailscale or Remote URL)</label>
                         <input type="text" id="pushover_cb" value="{{ config.pushover.public_base_url }}">
                     </div>
                 </div>
@@ -322,6 +400,21 @@
     </div>
 
     <script>
+        function initTheme() {
+            const saved = localStorage.getItem('gatarr-theme') || 'dark';
+            if (saved === 'light') {
+                document.body.classList.add('light-theme');
+                document.getElementById('themeBtn').textContent = '☀️';
+            }
+        }
+        initTheme();
+
+        function toggleTheme() {
+            const isLight = document.body.classList.toggle('light-theme');
+            localStorage.setItem('gatarr-theme', isLight ? 'light' : 'dark');
+            document.getElementById('themeBtn').textContent = isLight ? '☀️' : '🌙';
+        }
+
         function switchTab(tab) {
             document.querySelectorAll('.tab-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -420,9 +513,16 @@
             rejectFromDashboard(traktId);
         }
 
+        function handleRemoveClick(btn) {
+            const traktId = parseInt(btn.dataset.traktId);
+            const tmdbId = parseInt(btn.dataset.tmdbId);
+            const mediaType = btn.dataset.type;
+            removeFromArr(traktId, tmdbId, mediaType);
+        }
+
         async function approveFromDashboard(traktId, tmdbId, mediaType, title, year) {
-            const actionContainer = document.getElementById(`action-${traktId}`);
-            actionContainer.innerHTML = '<span style="color: var(--trakt-accent); font-size: 0.85rem;">Adding...</span>';
+            const actionContainer = document.getElementById(`action-${traktId}`) || document.getElementById(`hist-action-${traktId}`);
+            if (actionContainer) actionContainer.innerHTML = '<span style="color: var(--trakt-accent); font-size: 0.85rem;">Adding...</span>';
 
             try {
                 const res = await fetch(`/api/approve-item`, {
@@ -433,8 +533,10 @@
                 const data = await res.json();
 
                 if (data.success) {
-                    document.getElementById(`status-${traktId}`).innerHTML = `<span class="badge badge-done">${data.status}</span>`;
-                    actionContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 0.8rem;">—</span>';
+                    const statusEl = document.getElementById(`status-${traktId}`) || document.getElementById(`hist-status-${traktId}`);
+                    if (statusEl) statusEl.innerHTML = `<span class="badge badge-added">✓ ${data.status}</span>`;
+                    if (actionContainer) actionContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 0.8rem;">—</span>';
+                    setTimeout(() => location.reload(), 1200);
                 } else {
                     alert('Error: ' + data.status);
                     setTimeout(() => location.reload(), 1500);
@@ -449,7 +551,7 @@
             if (!confirm("Are you sure you want to reject this item? It won't prompt you again.")) return;
 
             const actionContainer = document.getElementById(`action-${traktId}`);
-            actionContainer.innerHTML = '<span style="color: var(--btn-reject); font-size: 0.85rem;">Rejecting...</span>';
+            if (actionContainer) actionContainer.innerHTML = '<span style="color: var(--btn-reject); font-size: 0.85rem;">Rejecting...</span>';
 
             try {
                 const res = await fetch(`/api/reject-item`, {
@@ -461,13 +563,43 @@
 
                 if (data.success) {
                     const row = document.getElementById(`row-${traktId}`);
-                    row.style.opacity = '0.3';
-                    document.getElementById(`status-${traktId}`).innerHTML = `<span class="badge badge-rejected">Rejected / Ignored</span>`;
-                    actionContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 0.8rem;">—</span>';
+                    if (row) row.style.opacity = '0.3';
+                    const statusEl = document.getElementById(`status-${traktId}`);
+                    if (statusEl) statusEl.innerHTML = `<span class="badge badge-rejected">✕ Rejected / Ignored</span>`;
+                    if (actionContainer) actionContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 0.8rem;">—</span>';
+                    setTimeout(() => location.reload(), 1200);
                 }
             } catch (e) {
                 alert('Request failed: ' + e);
                 setTimeout(() => location.reload(), 1500);
+            }
+        }
+
+        async function removeFromArr(traktId, tmdbId, mediaType) {
+            if (!confirm("Are you sure you want to remove this title and delete its files from your Arr library?")) return;
+
+            const actionContainer = document.getElementById(`hist-action-${traktId}`);
+            if (actionContainer) actionContainer.innerHTML = '<span style="color: #ef4444; font-size: 0.85rem;">Removing...</span>';
+
+            try {
+                const res = await fetch(`/api/remove-item`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ trakt_id: traktId, tmdb_id: tmdbId, media_type: mediaType })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    const statusEl = document.getElementById(`hist-status-${traktId}`);
+                    if (statusEl) statusEl.innerHTML = `<span class="badge badge-rejected">✕ Removed from Library</span>`;
+                    if (actionContainer) actionContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 0.8rem;">—</span>';
+                } else {
+                    alert('Could not delete from Arr: Check connection.');
+                    setTimeout(() => location.reload(), 1200);
+                }
+            } catch (e) {
+                alert('Request failed: ' + e);
+                setTimeout(() => location.reload(), 1200);
             }
         }
 

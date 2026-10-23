@@ -18,10 +18,10 @@ def fetch_trakt_watchlist(username: str, client_id: str, media_type: str = "movi
 def check_destined_for_streaming(tmdb_id: int, media_type: str, tmdb_api_key: str, subscribed_services: list):
     """
     Checks if an unreleased or upcoming movie/show is an original production 
-    destined for one of the user's subscribed streaming services.
+    destined directly for one of the user's subscribed streaming services.
     """
     endpoint = "movie" if media_type == "movie" else "tv"
-    url = f"https://api.themoviedb.org/3/{endpoint}/{tmdb_id}?api_key={tmdb_api_key}"
+    url = f"https://api.themoviedb.org/3/{endpoint}/{tmdb_id}?api_key={tmdb_api_key}&append_to_response=release_dates"
     
     try:
         data = requests.get(url, timeout=6).json()
@@ -30,45 +30,54 @@ def check_destined_for_streaming(tmdb_id: int, media_type: str, tmdb_api_key: st
 
     active_pool = [s.lower() for s in (subscribed_services or [])]
 
-    # Service name normalization aliases
-    alias_map = {
-        "apple tv+": "apple",
-        "apple tv plus": "apple",
-        "netflix": "netflix",
-        "disney+": "disney",
-        "disney plus": "disney",
-        "amazon prime video": "amazon",
-        "prime video": "amazon",
-        "max": "max",
-        "hbo": "max",
-        "hulu": "hulu",
-        "paramount+": "paramount",
-        "paramount plus": "paramount",
-        "peacock": "peacock"
-    }
-
-    user_keywords = set()
-    for s in active_pool:
-        for alias, kw in alias_map.items():
-            if alias in s:
-                user_keywords.add(kw)
-
-    # 1. TV Series: evaluate 'networks'
+    # For TV Series: Network check is reliable (Apple TV+, Netflix, Disney+, Max)
     if media_type == "show":
-        networks = [n.get("name", "") for n in data.get("networks", [])]
-        for net in networks:
-            net_lower = net.lower()
-            for kw in user_keywords:
-                if kw in net_lower:
-                    return True, f"Upcoming release on your subscription ({net})"
+        alias_map = {
+            "apple tv+": "apple tv+",
+            "apple tv plus": "apple tv+",
+            "netflix": "netflix",
+            "disney+": "disney+",
+            "disney plus": "disney+",
+            "amazon prime video": "amazon",
+            "prime video": "amazon",
+            "max": "max",
+            "hbo": "hbo",
+            "hulu": "hulu",
+            "paramount+": "paramount+",
+            "paramount plus": "paramount+",
+            "peacock": "peacock"
+        }
+        networks = [n.get("name", "").lower() for n in data.get("networks", [])]
+        for sub in active_pool:
+            target_kw = alias_map.get(sub, sub)
+            for net in networks:
+                if target_kw in net:
+                    return True, f"Upcoming series release on your subscription ({net.title()})"
 
-    # 2. Movies & Shows: evaluate 'production_companies'
-    companies = [c.get("name", "") for c in data.get("production_companies", [])]
-    for comp in companies:
-        comp_lower = comp.lower()
-        for kw in user_keywords:
-            if kw in comp_lower:
-                return True, f"Upcoming original on your subscription ({comp})"
+    # For Movies: Check if there is a theatrical release window first
+    if media_type == "movie":
+        release_dates_data = data.get("release_dates", {}).get("results", [])
+        for country in release_dates_data:
+            if country.get("iso_3166_1") == "US":
+                for rel in country.get("release_dates", []):
+                    # Type 3 is Theatrical. If it gets a theater run, it is NOT an instant streaming release.
+                    if rel.get("type") == 3:
+                        return False, None
+
+        # Only check studios that exclusively produce direct-to-streaming movies
+        exclusive_streaming_studios = {
+            "netflix": "Netflix",
+            "apple original films": "Apple TV+",
+            "apple studios": "Apple TV+"
+        }
+        
+        companies = [c.get("name", "").lower() for c in data.get("production_companies", [])]
+        for sub in active_pool:
+            for studio_key, service_name in exclusive_streaming_studios.items():
+                if (service_name.lower() in sub or sub in service_name.lower()):
+                    for comp in companies:
+                        if studio_key in comp:
+                            return True, f"Upcoming original streaming movie ({comp.title()})"
 
     return False, None
 
